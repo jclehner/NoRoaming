@@ -28,12 +28,9 @@ public class EventReceiver extends BroadcastReceiver
 	@Override
 	public void onReceive(Context context, Intent intent)
 	{
-		if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction()))
-		{
-			Util.setOperatorNameFromSettings(context);
-			ListenerService.start(context);
-		} else {
-			Log.i("NoRoaming", "Received intent:\n" + intent);
-		}
+		Log.i("NoRoaming", intent.getAction());
+
+		Util.setOperatorNameFromSettings(context);
+		ListenerService.start(context);
 	}
 }

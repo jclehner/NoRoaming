@@ -19,9 +19,14 @@
 package at.jclehner.noroaming;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -31,7 +36,9 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 import android.widget.ToggleButton;
+import eu.chainfire.libsuperuser.Shell.SU;
 
 public class MainActivity extends Activity
 {
@@ -54,6 +61,36 @@ public class MainActivity extends Activity
 	protected void onResume()
 	{
 		super.onResume();
+
+		new AsyncTask<Void, Void, Boolean>() {
+			@Override
+			protected Boolean doInBackground(Void... params)
+			{
+				return SU.available();
+			}
+
+			@Override
+			protected void onPostExecute(Boolean result)
+			{
+				if (!result) {
+					final AlertDialog.Builder ab =
+							new AlertDialog.Builder(MainActivity.this);
+
+					ab.setMessage(R.string.root_required);
+					ab.setCancelable(false);
+					ab.setNeutralButton(android.R.string.ok, new OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface dialog, int which)
+						{
+							MainActivity.this.finish();
+						}
+					});
+					ab.show();
+				}
+			}
+		}.execute();
+
 		updateStatus();
 
 		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -75,17 +112,10 @@ public class MainActivity extends Activity
 			public boolean onEditorAction(TextView tv, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					sp.edit().putString("operator", tv.getEditableText().toString()).commit();
-					Util.setOperatorNameFromSettings(MainActivity.this);
+					Toast.makeText(MainActivity.this, R.string.saved, Toast.LENGTH_SHORT).show();
 					tv.clearFocus();
-					tv.postDelayed(new Runnable() {
 
-						@Override
-						public void run() {
-							updateStatus();
-						}
-					}, 500);
-
-					return false;
+					setOperatorNameAndStatus();
 				}
 
 				return false;
@@ -99,6 +129,8 @@ public class MainActivity extends Activity
 			{
 				mOperatorInput.setEnabled(checked);
 				sp.edit().putBoolean("enabled", checked).commit();
+
+				setOperatorNameAndStatus();
 			}
 		});
 
@@ -106,6 +138,18 @@ public class MainActivity extends Activity
 
 		mToggler.setChecked(enabled);
 		mOperatorInput.setEnabled(enabled);
+	}
+
+	private void setOperatorNameAndStatus()
+	{
+		Util.setOperatorNameFromSettings(this);
+		new Handler().postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				updateStatus();
+			}
+		}, 500);
 	}
 
 	private void updateStatus()

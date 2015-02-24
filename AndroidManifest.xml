@@ -21,12 +21,17 @@
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.PHONE_STATE" />
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="package" android:path="at.jclehner.noroaming" />
             </intent-filter>
         </receiver>
         <activity
-            android:name=".MainActivity" >
+            android:name=".MainActivity"
+            android:configChanges="keyboardHidden|orientation|layoutDirection" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
