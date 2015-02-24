@@ -38,16 +38,17 @@ public final class Util
 			return;
 		}
 
-		final String operator = sp.getString("operator", null);
-		if (operator != null) {
-			if (!operator.equals(getprop("gsm.sim.operator.alpha"))) {
+		final String spn = sp.getString("operator", null);
+		if (spn != null) {
+			if (!spn.equals(getprop("gsm.sim.operator.alpha"))) {
 				new Thread() {
+					@Override
 					public void run()
 					{
 						final String cmd = "setprop gsm.sim.operator.alpha '" +
-								operator.replace("'", "\\'") + "'";
+								spn.replace("'", "\\'") + "'";
 						SU.run(cmd);
-						Log.i("NoRoaming", "Operator set to " + operator);
+						Log.i("NoRoaming", "Operator set to " + spn);
 					}
 				}.start();
 			}
@@ -62,8 +63,7 @@ public final class Util
 
 	public static String getprop(String key, String defValue)
 	{
-		try
-		{
+		try {
 			final Class<?> clazz = Class.forName("android.os.SystemProperties");
 			boolean has2Args = true;
 			Method m;

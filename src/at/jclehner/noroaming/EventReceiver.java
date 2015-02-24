@@ -21,21 +21,19 @@ package at.jclehner.noroaming;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.telephony.PhoneStateListener;
-import android.telephony.ServiceState;
-import android.telephony.TelephonyManager;
 import android.util.Log;
-import eu.chainfire.libsuperuser.Shell.SU;
 
 public class EventReceiver extends BroadcastReceiver
 {
 	@Override
 	public void onReceive(Context context, Intent intent)
 	{
-		if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+		if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction()))
+		{
 			Util.setOperatorNameFromSettings(context);
+			ListenerService.start(context);
+		} else {
+			Log.i("NoRoaming", "Received intent:\n" + intent);
 		}
 	}
 }

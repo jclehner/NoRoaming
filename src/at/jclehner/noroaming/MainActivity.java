@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.CompoundButton;
@@ -45,6 +46,8 @@ public class MainActivity extends Activity
 
 		mOperatorInput = (EditText) findViewById(R.id.operator);
 		mToggler = (ToggleButton) findViewById(R.id.toggler);
+
+		ListenerService.start(this);
 	}
 
 	@Override
@@ -54,10 +57,17 @@ public class MainActivity extends Activity
 		updateStatus();
 
 		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		mOperatorInput.setText(sp.getString("operator", ""));
-		if (mOperatorInput.getEditableText().length() == 0) {
-			mOperatorInput.setHint(Util.getprop("gsm.operator.alpha"));
+
+		String operator = sp.getString("operator", null);
+		if (TextUtils.isEmpty(operator)) {
+			operator = Util.getprop("gsm.operator.alpha");
 		}
+
+		if (TextUtils.isEmpty(operator)) {
+			mOperatorInput.setHint(R.string.operator);
+		}
+
+		mOperatorInput.setText(operator);
 
 		mOperatorInput.setOnEditorActionListener(new OnEditorActionListener() {
 
@@ -100,16 +110,21 @@ public class MainActivity extends Activity
 
 	private void updateStatus()
 	{
-		final String status =
-				"gsm.sim.operator.alpha=" +
-				Util.getprop("gsm.sim.operator.alpha") + "\n" +
-				"gsm.operator.alpha=" +
-				Util.getprop("gsm.operator.alpha") + "\n" +
-				"gsm.operator.isroaming=" +
-				Util.getprop("gsm.operator.isroaming");
+		final String[] props = {
+				"gsm.sim.operator.alpha",
+				"gsm.sim.operator.numeric",
+				"gsm.operator.alpha",
+				"gsm.operator.numeric",
+				"gsm.operator.isroaming"
+		};
+
+		final StringBuilder sb = new StringBuilder();
+		for (String prop : props) {
+			sb.append(prop + "=" + Util.getprop(prop) + "\n");
+		}
 
 		final TextView tv = (TextView) findViewById(R.id.status);
-		tv.setText(status);
+		tv.setText(sb);
 		tv.setTypeface(Typeface.MONOSPACE);
 	}
 }
